@@ -13,9 +13,6 @@ permissions:
 jobs:
   deploy_azure:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./fargate_config
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
