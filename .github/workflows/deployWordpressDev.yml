@@ -1,0 +1,52 @@
+name: Deploy Azure Migration Services
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "projects/wordpress-dev/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "projects/wordpress-dev/**"
+    types: [closed]
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  deploy_azure:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./projects/wordpress-dev
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      ARM_USE_OIDC: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: "Az CLI login"
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Generate backend
+        run: |
+          cat <<EOF > backend.tf
+
+          EOF
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
