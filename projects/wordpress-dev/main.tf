@@ -164,7 +164,11 @@ resource "azurerm_mysql_flexible_server" "nhwpdev-db" {
 
 # Firewall Rule
 resource "azurerm_mysql_flexible_server_firewall_rule" "app_service_access" {
-  for_each = toset(azurerm_linux_web_app.wp-dev.outbound_ip_addresses)
+  for_each = {
+    for ip in azurerm_subnet.wp-dev-vn-sn1.service_endpoints : ip => {
+      key = ip
+    }
+  }
   name                = "app-service-access-${each.key}"
   resource_group_name = azurerm_resource_group.wordpress.name
   server_name         = azurerm_mysql_flexible_server.nhwpdev-db.name
