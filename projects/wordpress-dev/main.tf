@@ -164,11 +164,12 @@ resource "azurerm_mysql_flexible_server" "nhwpdev-db" {
 
 # Firewall Rule
 resource "azurerm_mysql_flexible_server_firewall_rule" "app_service_access" {
-  name                = "app-service-access"
+  for_each = toset(azurerm_linux_web_app.wp-dev.outbound_ip_addresses)
+  name                = "app-service-access-${each.key}"
   resource_group_name = azurerm_resource_group.wordpress.name
   server_name         = azurerm_mysql_flexible_server.nhwpdev-db.name
-  start_ip_address    = azurerm_linux_web_app.wp-dev.outbound_ip_addresses
-  end_ip_address      = azurerm_linux_web_app.wp-dev.outbound_ip_addresses
+  start_ip_address    = each.key
+  end_ip_address      = each.key
 }
 
 resource "azurerm_mysql_flexible_database" "wordpress" {
