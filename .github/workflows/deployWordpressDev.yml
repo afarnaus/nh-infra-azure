@@ -1,4 +1,4 @@
-name: Deploy Azure Migration Services
+name: Deploy Wordpress Dev
 on:
   push:
     branches:
