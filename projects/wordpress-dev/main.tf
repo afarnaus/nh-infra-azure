@@ -32,40 +32,40 @@ resource "azurerm_service_plan" "plan" {
 }
 
 #ActualService
-# resource "azurerm_app_service" "app" {
-#   name                    = "wp-dev-app"
-#   location                = azurerm_resource_group.wordpress.location
-#   resource_group_name     = azurerm_resource_group.wordpress.name
-#   app_service_plan_id     = azurerm_service_plan.plan.id
-#   https_only              = true
-#   client_affinity_enabled = false
+resource "azurerm_app_service" "app" {
+  name                    = "wp-dev-app"
+  location                = azurerm_resource_group.wordpress.location
+  resource_group_name     = azurerm_resource_group.wordpress.name
+  app_service_plan_id     = azurerm_service_plan.plan.id
+  https_only              = true
+  client_affinity_enabled = false
 
-#   app_settings = {
-#     "WEBSITES_ENABLE_APP_SERVICE_STORAGE"    = "false"
-#     "WORDPRESS_DB_HOST"                      = azurerm_mysql_flexible_server.nhwpdev-db.fqdn
-#     "WORDPRESS_DB_NAME"                      = "wordpress"
-#     "WORDPRESS_DB_USER"                      = "dbadmin"
-#     "WORDPRESS_DB_PASSWORD"                  = random_password.mysql.result
-#   }
+  app_settings = {
+    "WEBSITES_ENABLE_APP_SERVICE_STORAGE"    = "false"
+    "WORDPRESS_DB_HOST"                      = azurerm_mysql_flexible_server.nhwpdev-db.fqdn
+    "WORDPRESS_DB_NAME"                      = "wordpress"
+    "WORDPRESS_DB_USER"                      = "dbadmin"
+    "WORDPRESS_DB_PASSWORD"                  = random_password.mysql.result
+  }
 
-#   site_config {
-#     always_on        = true
-#     min_tls_version  = 1.2
-#     ftps_state       = "Disabled"
-#     linux_fx_version = "DOCKER|wordpress:latest"
-#   }
+  site_config {
+    always_on        = true
+    min_tls_version  = 1.2
+    ftps_state       = "Disabled"
+    linux_fx_version = "DOCKER|wordpress:latest"
+  }
 
-#   logs {
-#     application_logs {}
+  logs {
+    application_logs {}
 
-#     http_logs {
-#       file_system {
-#         retention_in_days = 90
-#         retention_in_mb   = 50
-#       }
-#     }
-#   }
-# }
+    http_logs {
+      file_system {
+        retention_in_days = 90
+        retention_in_mb   = 50
+      }
+    }
+  }
+}
 
 resource "azurerm_linux_web_app" "wp-dev" {
   name                = "wp-dev-app"
