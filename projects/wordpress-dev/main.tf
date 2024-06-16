@@ -1,6 +1,3 @@
-resource "random_id" "id" {
-  byte_length = 8
-}
 #Core RG
 resource "azurerm_resource_group" "wordpress" {
   name     = "wordpress-dev-rg"
@@ -23,6 +20,12 @@ resource "azurerm_storage_container" "wp-container" {
   container_access_type = "private"
 }
 
+resource "azurerm_storage_container" "wp-container-public" {
+  name                  = "wp-container-public"
+  storage_account_name  = azurerm_storage_account.wordpress_storage.name
+  container_access_type = "blob"
+}
+
 #ASP
 resource "azurerm_service_plan" "plan" {
   name                = "wordpress-dev-plan"
@@ -37,14 +40,14 @@ resource "azurerm_virtual_network" "wp-dev-vn" {
   name                = "wp-dev-vn"
   location            = azurerm_resource_group.wordpress.location
   resource_group_name = azurerm_resource_group.wordpress.name
-  address_space       = ["10.0.0.0/16"]
+  address_space       = ["10.40.0.0/18"]
 }
 
 resource "azurerm_subnet" "wp-dev-vn-sn1" {
   name                 = "wp-dev-vn-sn1"
   resource_group_name  = azurerm_resource_group.wordpress.name
   virtual_network_name = azurerm_virtual_network.wp-dev-vn.name
-  address_prefixes     = ["10.0.2.0/24"]
+  address_prefixes     = ["10.40.0.0/20"]
   service_endpoints    = ["Microsoft.Storage"]
   delegation {
     name = "fs"
@@ -61,8 +64,8 @@ resource "azurerm_subnet" "wp-dev-vn-sn2" {
   name                 = "wp-dev-vn-sn2"
   resource_group_name  = azurerm_resource_group.wordpress.name
   virtual_network_name = azurerm_virtual_network.wp-dev-vn.name
-  address_prefixes     = ["10.0.3.0/24"]
-  service_endpoints = [ "Microsoft.Storage" ]
+  address_prefixes     = ["10.40.16.0/20"]
+  service_endpoints    = ["Microsoft.Storage"]
   delegation {
     name = "as"
     service_delegation {
@@ -73,7 +76,14 @@ resource "azurerm_subnet" "wp-dev-vn-sn2" {
     }
   }
 }
- 
+
+resource "azurerm_subnet" "wp-dev-vn-sn3" {
+  name                 = "wp-dev-vn-sn3"
+  resource_group_name  = azurerm_resource_group.wordpress.name
+  virtual_network_name = azurerm_virtual_network.wp-dev-vn.name
+  address_prefixes     = ["10.40.32.0/20"]
+}
+
 #Private DNS Zone for DB
 resource "azurerm_private_dns_zone" "nhwpdevzone" {
   name                = "nhwpdevzone.mysql.database.azure.com"
@@ -131,8 +141,7 @@ resource "azurerm_cdn_frontdoor_profile" "nh-wp-dev-profile" {
 resource "azurerm_cdn_frontdoor_custom_domain" "nh-wp-dev-cdn" {
   name                     = "nh-wp-dev-cdn"
   cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.nh-wp-dev-profile.id
-  host_name                = "dev.wp.noahshope.com"
-
+  host_name                = var.final_fqdn
   tls {
     certificate_type    = "ManagedCertificate"
     minimum_tls_version = "TLS12"
@@ -140,79 +149,79 @@ resource "azurerm_cdn_frontdoor_custom_domain" "nh-wp-dev-cdn" {
 }
 
 resource "azurerm_cdn_frontdoor_endpoint" "nh-wp-dev-endpoint" {
-  name                = "nh-wp-dev-endpoint"
+  name                     = "nh-wp-dev-endpoint"
   cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_custom_domain.nh-wp-dev-cdn.cdn_frontdoor_profile_id
 }
 
 resource "azurerm_cdn_frontdoor_origin_group" "wp-dev-origin-group" {
-  name                = "wp-dev-origin-group"
+  name                     = "wp-dev-origin-group"
   cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_custom_domain.nh-wp-dev-cdn.cdn_frontdoor_profile_id
   health_probe {
-    path     = "/"
-    protocol = "Https"
+    path                = "/"
+    protocol            = "Https"
     interval_in_seconds = 100
-    request_type = "GET"
+    request_type        = "GET"
   }
 
   load_balancing {
-    sample_size = 1
+    sample_size                 = 1
     successful_samples_required = 1
   }
   session_affinity_enabled = false
 }
 
 resource "azurerm_cdn_frontdoor_origin" "wp-dev-origin-appservice" {
-  name                = "wp-dev-origin-appservice"
-  certificate_name_check_enabled = false
-  cdn_frontdoor_origin_group_id = azurerm_cdn_frontdoor_origin_group.wp-dev-origin-group.id
-  priority            = 1
-  weight              = 1000
-  host_name           = azurerm_linux_web_app.wp-dev.default_hostname
-  enabled = true
+  name                           = "wp-dev-origin-appservice"
+  certificate_name_check_enabled = true
+  cdn_frontdoor_origin_group_id  = azurerm_cdn_frontdoor_origin_group.wp-dev-origin-group.id
+  priority                       = 1
+  weight                         = 1000
+  host_name                      = azurerm_linux_web_app.wp-dev.default_hostname
+  enabled                        = true
 }
 
 resource "azurerm_cdn_frontdoor_route" "wp-dev-route" {
-  depends_on = [ azurerm_cdn_frontdoor_origin.wp-dev-origin-appservice, azurerm_cdn_frontdoor_origin_group.wp-dev-origin-group ]
-  name                = "wp-dev-route"
-  cdn_frontdoor_endpoint_id = azurerm_cdn_frontdoor_endpoint.nh-wp-dev-endpoint.id
-  cdn_frontdoor_origin_ids = [ azurerm_cdn_frontdoor_origin.wp-dev-origin-appservice.id ]
-  cdn_frontdoor_origin_group_id = azurerm_cdn_frontdoor_origin_group.wp-dev-origin-group.id
-  supported_protocols = [ "Http", "Https"]
-  patterns_to_match  = ["/*"]
-  forwarding_protocol = "MatchRequest"
-  cdn_frontdoor_custom_domain_ids = ["/subscriptions/62e7eb8b-885e-4f55-8f74-75c1b5577a65/resourceGroups/wordpress-dev-rg/providers/Microsoft.Cdn/profiles/nh-wp-dev-profile/customDomains/nh-wp-dev-cdn" ]
+  depends_on                      = [azurerm_cdn_frontdoor_origin.wp-dev-origin-appservice, azurerm_cdn_frontdoor_origin_group.wp-dev-origin-group]
+  name                            = "wp-dev-route"
+  cdn_frontdoor_endpoint_id       = azurerm_cdn_frontdoor_endpoint.nh-wp-dev-endpoint.id
+  cdn_frontdoor_origin_ids        = [azurerm_cdn_frontdoor_origin.wp-dev-origin-appservice.id]
+  cdn_frontdoor_origin_group_id   = azurerm_cdn_frontdoor_origin_group.wp-dev-origin-group.id
+  supported_protocols             = ["Http", "Https"]
+  patterns_to_match               = ["/*"]
+  forwarding_protocol             = "MatchRequest"
+  cdn_frontdoor_custom_domain_ids = [azurerm_cdn_frontdoor_custom_domain.nh-wp-dev-cdn.id]
 }
 
 #Put it all together
 #Web App
 resource "azurerm_linux_web_app" "wp-dev" {
-  name                = "wp-dev-app"
-  resource_group_name = azurerm_resource_group.wordpress.name
-  location            = azurerm_resource_group.wordpress.location
-  service_plan_id     = azurerm_service_plan.plan.id
+  name                      = "wp-dev-app"
+  resource_group_name       = azurerm_resource_group.wordpress.name
+  location                  = azurerm_resource_group.wordpress.location
+  service_plan_id           = azurerm_service_plan.plan.id
   virtual_network_subnet_id = azurerm_subnet.wp-dev-vn-sn2.id
 
   site_config {
-    always_on        = true
-    ftps_state       = "Disabled"
+    always_on              = true
+    ftps_state             = "Disabled"
     vnet_route_all_enabled = true
     application_stack {
-      docker_image_name = "wordpress"
+      docker_image_name   = "wordpress"
       docker_registry_url = "https://index.docker.io"
     }
   }
 
   app_settings = {
-    "WEBSITES_ENABLE_APP_SERVICE_STORAGE"    = "true"
-    "WORDPRESS_DB_HOST"                      = "${azurerm_mysql_flexible_server.nhwpdev-db.fqdn}:3306"
-    "WORDPRESS_DB_NAME"                      = "wordpress"
-    "WORDPRESS_DB_USER"                      = var.db_username
-    "WORDPRESS_DB_PASSWORD"                  = var.db_password
+    "WEBSITES_ENABLE_APP_SERVICE_STORAGE" = "true"
+    "WORDPRESS_DB_HOST"                   = "${azurerm_mysql_flexible_server.nhwpdev-db.fqdn}:3306"
+    "WORDPRESS_DB_NAME"                   = "wordpress"
+    "WORDPRESS_DB_USER"                   = var.db_username
+    "WORDPRESS_DB_PASSWORD"               = var.db_password
   }
 
   logs {
     application_logs {
-      file_system_level = "Verbose"
+      file_system_level = "Off"
     }
 
     http_logs {
@@ -221,6 +230,12 @@ resource "azurerm_linux_web_app" "wp-dev" {
         retention_in_mb   = 50
       }
     }
-  
+
   }
+}
+
+resource "azurerm_app_service_custom_hostname_binding" "app-service-binding" {
+  hostname            = var.final_fqdn
+  app_service_name    = azurerm_linux_web_app.wp-dev.name
+  resource_group_name = azurerm_resource_group.wordpress.name
 }

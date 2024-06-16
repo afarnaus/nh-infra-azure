@@ -19,3 +19,8 @@ variable "admin_ssh_key" {
   description = "The SSH public key to use for the VMs."
   type        = string
 }
+
+variable "final_fqdn" {
+  description = "The final FQDN for the WordPress site."
+  type        = string
+}
