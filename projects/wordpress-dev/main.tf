@@ -98,7 +98,7 @@ resource "azurerm_mysql_flexible_server" "nhwpdev-db" {
   backup_retention_days  = 7
   delegated_subnet_id    = azurerm_subnet.wp-dev-vn-sn1.id
   private_dns_zone_id    = azurerm_private_dns_zone.nhwpdevzone.id
-  sku_name               = "B_Standard_B2s"
+  sku_name               = "B_Standard_B1s"
 
   depends_on = [azurerm_private_dns_zone_virtual_network_link.nhwpdevzonelink]
 }
