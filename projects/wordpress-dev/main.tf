@@ -131,6 +131,13 @@ resource "azurerm_mysql_flexible_database" "wordpress" {
   collation           = "utf8_general_ci"
 }
 
+resource "azurerm_mysql_flexible_server_configuration" "require_secure_transport" {
+  name                = "require_secure_transport"
+  resource_group_name = azurerm_resource_group.wordpress.name
+  server_name         = azurerm_mysql_flexible_server.nhwpdev-db.name
+  value               = "OFF"
+}
+
 #CDN
 resource "azurerm_cdn_frontdoor_profile" "nh-wp-dev-profile" {
   name                = "nh-wp-dev-profile"
