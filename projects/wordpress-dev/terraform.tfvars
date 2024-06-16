@@ -1,0 +1,5 @@
+db_username = "dbadmin"
+db_password = "3WMDwn-_VhnBMkzoc*DRy*9TsH87ADEr"
+admin_username = "azureuser"
+admin_password = "QDdEAV87X@.7Vap4!iF_AUK*Mw6J8wvw"
+admin_ssh_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDC+CQJWHJiwypJ3hLC0cnI1Y7+GwbqmKevi2D4hlFQTxH810s+7CPQRAd5JVAgADQg9r5/W1UD7C+JxC5jHZksw/vwAFFn9lRqZaLIaiCzteeSILPcgPgO+tYuGBNvlXlpo67Q3Ygb63ylOfwVGvBtkSAEI8owD4CQJ8mc8RiAQkc2I8hBajg4woa/QCcAXYyv6clnHNfGYti5+WY+HVQc3UdfZ9tchhdsjr0t9I2unKfXwhI0eQVSqPnHbVAE/UWVimJe6SWezI7I7dOVoC+Lz03Juo1kLLKTCxL+EFFO/N6S754p8pLeLG1IcUJUKd7OIiVN+Wdel71aZ0yI1NFz alexanderfarnaus@Alexanders-MacBook-Pro.local"
