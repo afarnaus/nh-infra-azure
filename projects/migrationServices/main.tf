@@ -139,4 +139,29 @@ resource "azurerm_key_vault" "key_vault" {
       "Update",
     ]
   }
+  access_policy {
+    tenant_id = data.azurerm_client_config.current.tenant_id
+    object_id = azurerm_linux_function_app.nh-function-app-v2.identity[0].principal_id
+    key_permissions = [
+      "Decrypt",
+      "Encrypt",
+      "Get",
+      "List",
+      "Sign",
+      "UnwrapKey",
+      "Verify",
+      "WrapKey",
+      "GetRotationPolicy"
+    ]
+    secret_permissions = [
+      "Get",
+      "List"
+    ]
+    storage_permissions = [
+      "Get",
+      "GetSAS",
+      "List",
+      "ListSAS",
+    ]
+  }
 }
