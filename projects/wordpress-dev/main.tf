@@ -199,15 +199,15 @@ resource "azurerm_cdn_frontdoor_route" "wp-dev-route" {
   cdn_frontdoor_custom_domain_ids = [azurerm_cdn_frontdoor_custom_domain.nh-wp-dev-cdn.id]
 }
 
-resource "azurerm_cdn_frontdoor_rule_set" "cache-ruleset" {
+resource "azurerm_cdn_frontdoor_rule_set" "cacheruleset" {
   name                     = "cacheruleset"
   cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.nh-wp-dev-profile.id
 }
 
-resource "azurerm_cdn_frontdoor_rule" "cache-uploads-dir" {
-  depends_on = [ azurerm_cdn_frontdoor_origin_group.wp-dev-origin-group, azurerm_cdn_frontdoor_rule_set.main-ruleset ]
-  name       = "cache-uploads-dir"
-  cdn_frontdoor_rule_set_id = azurerm_cdn_frontdoor_rule_set.cache-ruleset.id
+resource "azurerm_cdn_frontdoor_rule" "cacheuploadsdir" {
+  depends_on = [ azurerm_cdn_frontdoor_origin_group.wp-dev-origin-group, azurerm_cdn_frontdoor_rule_set.cacheruleset ]
+  name       = "cacheuploadsdir"
+  cdn_frontdoor_rule_set_id = azurerm_cdn_frontdoor_rule_set.cacheruleset.id
   order      = 1
   behavior_on_match = "Stop"
 
@@ -232,10 +232,10 @@ resource "azurerm_cdn_frontdoor_rule" "cache-uploads-dir" {
     }
   }
 
-resource "azurerm_cdn_frontdoor_rule" "cache-static-files" {
-  depends_on = [ azurerm_cdn_frontdoor_origin_group.wp-dev-origin-group, azurerm_cdn_frontdoor_rule_set.main-ruleset ]
-  name       = "cache-static-files"
-  cdn_frontdoor_rule_set_id = azurerm_cdn_frontdoor_rule_set.cache-ruleset.id
+resource "azurerm_cdn_frontdoor_rule" "cachestaticfiles" {
+  depends_on = [ azurerm_cdn_frontdoor_origin_group.wp-dev-origin-group, azurerm_cdn_frontdoor_rule_set.cacheruleset]
+  name       = "cachestaticfiles"
+  cdn_frontdoor_rule_set_id = azurerm_cdn_frontdoor_rule_set.cacheruleset.id
   order      = 2
   behavior_on_match = "Stop"
 
