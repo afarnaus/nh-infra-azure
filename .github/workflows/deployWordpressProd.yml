@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Append DB password to terraform.tfvars
-        run: echo 'db_password="${{ secrets.DB_PASSWORD }}"' >> terraform.tfvars
+        run: echo 'db_password="${{ secrets.DATABASE_PW }}"' >> terraform.tfvars
      
       - name: "Az CLI login"
         uses: azure/login@v2
