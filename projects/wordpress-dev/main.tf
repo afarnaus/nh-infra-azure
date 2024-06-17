@@ -200,7 +200,7 @@ resource "azurerm_cdn_frontdoor_route" "wp-dev-route" {
 }
 
 resource "azurerm_cdn_frontdoor_rule_set" "cache-ruleset" {
-  name                     = "main-ruleset"
+  name                     = "cacheruleset"
   cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.nh-wp-dev-profile.id
 }
 
