@@ -193,6 +193,7 @@ resource "azurerm_cdn_frontdoor_route" "wp-dev-route" {
   cdn_frontdoor_endpoint_id       = azurerm_cdn_frontdoor_endpoint.nh-wp-dev-endpoint.id
   cdn_frontdoor_origin_ids        = [azurerm_cdn_frontdoor_origin.wp-dev-origin-appservice.id]
   cdn_frontdoor_origin_group_id   = azurerm_cdn_frontdoor_origin_group.wp-dev-origin-group.id
+  cdn_frontdoor_rule_set_ids      = [azurerm_cdn_frontdoor_rule_set.cacheruleset.id]
   supported_protocols             = ["Http", "Https"]
   patterns_to_match               = ["/*"]
   forwarding_protocol             = "MatchRequest"
@@ -205,11 +206,11 @@ resource "azurerm_cdn_frontdoor_rule_set" "cacheruleset" {
 }
 
 resource "azurerm_cdn_frontdoor_rule" "cacheuploadsdir" {
-  depends_on = [ azurerm_cdn_frontdoor_origin_group.wp-dev-origin-group, azurerm_cdn_frontdoor_rule_set.cacheruleset ]
-  name       = "cacheuploadsdir"
+  depends_on                = [azurerm_cdn_frontdoor_origin_group.wp-dev-origin-group, azurerm_cdn_frontdoor_rule_set.cacheruleset]
+  name                      = "cacheuploadsdir"
   cdn_frontdoor_rule_set_id = azurerm_cdn_frontdoor_rule_set.cacheruleset.id
-  order      = 1
-  behavior_on_match = "Stop"
+  order                     = 1
+  behavior_on_match         = "Stop"
 
   conditions {
     url_path_condition {
@@ -220,24 +221,24 @@ resource "azurerm_cdn_frontdoor_rule" "cacheuploadsdir" {
     }
   }
 
-    actions {
-      route_configuration_override_action {
-        query_string_caching_behavior = "UseQueryString"
-        compression_enabled = true
-        cache_behavior = "OverrideAlways"
-        cache_duration = "3.00:00:00"
-        cdn_frontdoor_origin_group_id  = azurerm_cdn_frontdoor_origin_group.wp-dev-origin-group.id
-        forwarding_protocol = "MatchRequest"
-      }
+  actions {
+    route_configuration_override_action {
+      query_string_caching_behavior = "UseQueryString"
+      compression_enabled           = true
+      cache_behavior                = "OverrideAlways"
+      cache_duration                = "3.00:00:00"
+      cdn_frontdoor_origin_group_id = azurerm_cdn_frontdoor_origin_group.wp-dev-origin-group.id
+      forwarding_protocol           = "MatchRequest"
     }
   }
+}
 
 resource "azurerm_cdn_frontdoor_rule" "cachestaticfiles" {
-  depends_on = [ azurerm_cdn_frontdoor_origin_group.wp-dev-origin-group, azurerm_cdn_frontdoor_rule_set.cacheruleset]
-  name       = "cachestaticfiles"
+  depends_on                = [azurerm_cdn_frontdoor_origin_group.wp-dev-origin-group, azurerm_cdn_frontdoor_rule_set.cacheruleset]
+  name                      = "cachestaticfiles"
   cdn_frontdoor_rule_set_id = azurerm_cdn_frontdoor_rule_set.cacheruleset.id
-  order      = 2
-  behavior_on_match = "Stop"
+  order                     = 2
+  behavior_on_match         = "Stop"
 
   conditions {
     url_path_condition {
@@ -256,12 +257,12 @@ resource "azurerm_cdn_frontdoor_rule" "cachestaticfiles" {
   actions {
     route_configuration_override_action {
       query_string_caching_behavior = "UseQueryString"
-      compression_enabled = true
-      cache_behavior = "OverrideAlways"
-      cache_duration = "3.00:00:00"
+      compression_enabled           = true
+      cache_behavior                = "OverrideAlways"
+      cache_duration                = "3.00:00:00"
     }
   }
-  }
+}
 
 #Put it all together
 #Web App
