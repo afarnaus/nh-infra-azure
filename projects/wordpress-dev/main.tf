@@ -199,6 +199,70 @@ resource "azurerm_cdn_frontdoor_route" "wp-dev-route" {
   cdn_frontdoor_custom_domain_ids = [azurerm_cdn_frontdoor_custom_domain.nh-wp-dev-cdn.id]
 }
 
+resource "azurerm_cdn_frontdoor_rule_set" "cache-ruleset" {
+  name                     = "main-ruleset"
+  cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.nh-wp-dev-profile.id
+}
+
+resource "azurerm_cdn_frontdoor_rule" "cache-uploads-dir" {
+  depends_on = [ azurerm_cdn_frontdoor_origin_group.wp-dev-origin-group, azurerm_cdn_frontdoor_rule_set.main-ruleset ]
+  name       = "cache-uploads-dir"
+  cdn_frontdoor_rule_set_id = azurerm_cdn_frontdoor_rule_set.cache-ruleset.id
+  order      = 1
+  behavior_on_match = "Stop"
+
+  conditions {
+    url_path_condition {
+      operator         = "BeginsWith"
+      negate_condition = false
+      match_values     = ["wp-content/uploads/"]
+      transforms       = ["Lowercase"]
+    }
+  }
+
+    actions {
+      route_configuration_override_action {
+        query_string_caching_behavior = "UseQueryString"
+        compression_enabled = true
+        cache_behavior = "OverrideAlways"
+        cache_duration = "3.00:00:00"
+        cdn_frontdoor_origin_group_id  = azurerm_cdn_frontdoor_origin_group.wp-dev-origin-group.id
+        forwarding_protocol = "MatchRequest"
+      }
+    }
+  }
+
+resource "azurerm_cdn_frontdoor_rule" "cache-static-files" {
+  depends_on = [ azurerm_cdn_frontdoor_origin_group.wp-dev-origin-group, azurerm_cdn_frontdoor_rule_set.main-ruleset ]
+  name       = "cache-static-files"
+  cdn_frontdoor_rule_set_id = azurerm_cdn_frontdoor_rule_set.cache-ruleset.id
+  order      = 2
+  behavior_on_match = "Stop"
+
+  conditions {
+    url_path_condition {
+      operator         = "BeginsWith"
+      negate_condition = false
+      match_values     = ["wp-includes/", "wp-content/themes/"]
+      transforms       = ["Lowercase"]
+    }
+    url_file_extension_condition {
+      operator         = "Equal"
+      negate_condition = false
+      match_values     = ["css", "js", "gif", "png", "jpg", "ico", "ttf", "otf", "woff", "woff2"]
+      transforms       = ["Lowercase"]
+    }
+  }
+  actions {
+    route_configuration_override_action {
+      query_string_caching_behavior = "UseQueryString"
+      compression_enabled = true
+      cache_behavior = "OverrideAlways"
+      cache_duration = "3.00:00:00"
+    }
+  }
+  }
+
 #Put it all together
 #Web App
 resource "azurerm_linux_web_app" "wp-dev" {
