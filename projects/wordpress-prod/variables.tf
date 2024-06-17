@@ -10,4 +10,4 @@ variable "db_password" {
 variable "final_fqdn" {
   description = "The final FQDN for the WordPress site."
   type        = string
-} 
+}
