@@ -292,9 +292,6 @@ resource "azurerm_linux_web_app" "wp-dev" {
   }
 
   logs {
-    application_logs {
-      file_system_level = "Off"
-    }
 
     http_logs {
       file_system {
