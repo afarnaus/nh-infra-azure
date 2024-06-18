@@ -1,0 +1,12 @@
+{
+  "bindings": [
+    {
+      "type": "timerTrigger",
+      "direction": "in",
+      "name": "req",
+      "schedule" : "0 0 0 * * *"
+    }
+  ],
+  "scriptFile": "app.py",
+  "entryPoint": "main"
+}
