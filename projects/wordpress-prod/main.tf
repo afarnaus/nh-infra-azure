@@ -142,7 +142,7 @@ resource "azurerm_mysql_flexible_server_configuration" "require_secure_transport
 resource "azurerm_cdn_frontdoor_profile" "nh-wp-prod-profile" {
   name                = "nh-wp-prod-profile"
   resource_group_name = azurerm_resource_group.wordpress.name
-  sku_name            = "Standard_AzureFrontDoor"
+  sku_name            = "Premium_AzureFrontDoor"
 }
 
 resource "azurerm_cdn_frontdoor_custom_domain" "nh-wp-prod-cdn" {
