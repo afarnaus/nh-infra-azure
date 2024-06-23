@@ -1,2 +1,2 @@
 db_username    = "dbadmin"
-final_fqdn     = "noahshope.com"
+final_fqdn     = "www.noahshope.com"
