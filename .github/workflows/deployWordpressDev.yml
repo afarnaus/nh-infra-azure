@@ -1,16 +1,17 @@
 name: Deploy Wordpress Dev
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "projects/wordpress-dev/**"
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "projects/wordpress-dev/**"
-    types: [closed]
+  workflow_dispatch:
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - "projects/wordpress-dev/**"
+  # pull_request:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - "projects/wordpress-dev/**"
+  #   types: [closed]
 permissions:
   id-token: write
   contents: read
