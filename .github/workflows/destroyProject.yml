@@ -41,5 +41,5 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
+      - name: Terraform ${{ github.event.inputs.action }} 
+        run: terraform ${{ github.event.inputs.action }} -auto-approve
