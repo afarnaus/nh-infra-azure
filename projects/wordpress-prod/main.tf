@@ -284,7 +284,7 @@ resource "azurerm_linux_web_app" "wp-prod" {
   }
 
   app_settings = {
-    "WEBSITES_ENABLE_APP_SERVICE_STORAGE" = "true"
+    "WORDPRESS_LOCAL_STORAGE_CACHE_ENABLED" = "true"
     "WORDPRESS_DB_HOST"                   = "${azurerm_mysql_flexible_server.nhwpprod-db.fqdn}:3306"
     "WORDPRESS_DB_NAME"                   = "wordpress"
     "WORDPRESS_DB_USER"                   = var.db_username
