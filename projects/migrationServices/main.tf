@@ -57,7 +57,7 @@ resource "azurerm_application_insights" "function_app_insights" {
 data "archive_file" "python_function_package" {
   type        = "zip"
   source_dir  = "${path.module}/functions/"
-  output_path = "${path.module}/out/17jun20204.zip"
+  output_path = "${path.module}/out/4jul2024.zip"
   #Excludes for python
   excludes = [
     ".git/*",
